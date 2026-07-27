@@ -11,7 +11,10 @@ app.use(express.json());
 
 // API Endpoint to handle GitHub Push via Token
 app.post('/api/github-push', (req, res) => {
-  const token = process.env.GITHUB_TOKEN || req.body?.token || (['ghp_', 'SYIhWmimCGnh', 'FPMuHcbyNlvf', 'araLFd3kBmQB'].join(''));
+  const token = req.body?.token || process.env.GITHUB_TOKEN;
+  if (!token) {
+    return res.status(400).json({ success: false, error: 'GitHub Personal Access Token is required to push to repository.' });
+  }
   const username = 'hardhustlekd-max';
   const repo = 'keyboard';
   const remoteUrl = `https://x-access-token:${token}@github.com/${username}/${repo}.git`;
@@ -39,6 +42,9 @@ app.post('/api/github-push', (req, res) => {
 });
 
 async function startServer() {
+  // Serve www landing page directory
+  app.use('/www', express.static(path.join(process.cwd(), 'www')));
+
   // Mount Vite middleware in dev
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
