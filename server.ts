@@ -21,10 +21,9 @@ app.post('/api/github-push', (req, res) => {
     'git config user.name "hardhustlekd-max"',
     'git config user.email "kirubeldenekew14@gmail.com"',
     'git add .',
-    'git commit -m "Initial commit: Amharic Android Keyboard App (Android 2.4+ supported) with Windows 10 Amharic Phonetic engine and dedicated Language Locking toggle"',
+    'git commit -m "Update: Amharic Android Keyboard App (Android 2.4+ supported) with Clean Minimalism theme and Windows 10 Amharic Phonetic engine" || true',
     'git branch -M main',
-    `git remote remove origin || true`,
-    `git remote add origin ${remoteUrl}`,
+    `git remote set-url origin ${remoteUrl} 2>/dev/null || git remote add origin ${remoteUrl}`,
     'git push -u origin main --force'
   ].join(' && ');
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Copy, Trash2, Volume2, Check, Sparkles, AlertCircle } from 'lucide-react';
-import { LanguageMode } from '../types';
+import { LanguageMode, ThemeMode } from '../types';
 
 interface TextSandboxProps {
   text: string;
