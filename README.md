@@ -2,14 +2,21 @@
 
 A native Android Input Method Service (IME) built entirely in **Kotlin** following the exact **Windows 10 Amharic Phonetic Keyboard layout specification**.
 
-## 🚀 Automated APK Compilation (GitHub Actions)
+## 🚀 APK Download Links
 
-This repository includes a GitHub Actions CI pipeline (`.github/workflows/build.yml`) that compiles valid native Android APKs directly from source using JDK 17, Android SDK, and Gradle.
+You can download the pre-compiled **Amharic Keyboard APK** directly from GitHub in two ways:
 
-### Download Compiled APKs:
-- Go to the **[GitHub Actions Workflows Tab](https://github.com/hardhustlekd-max/keyboard/actions)**.
-- Select the latest build run on `main`.
-- Download `AmharicKeyboard-Debug-APK` or `AmharicKeyboard-Release-APK` from the **Artifacts** section at the bottom of the run page.
+### 📦 1. Official GitHub Release (Recommended)
+- 📥 **[Download AmharicKeyboard.apk (v1.0.0)](https://github.com/hardhustlekd-max/keyboard/releases/download/v1.0.0/AmharicKeyboard.apk)**
+- 🏷️ **[View All Releases on GitHub](https://github.com/hardhustlekd-max/keyboard/releases)**
+
+---
+
+### ⚙️ 2. Automated Build Artifacts (GitHub Actions)
+Every code update automatically compiles new APKs:
+1. Go to the **[GitHub Actions Workflows Tab](https://github.com/hardhustlekd-max/keyboard/actions)**.
+2. Click on the latest workflow run on `main`.
+3. Scroll down to **Artifacts** to download `AmharicKeyboard-Release-APK` or `AmharicKeyboard-Debug-APK`.
 
 ---
 
