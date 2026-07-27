@@ -1,8 +1,25 @@
+# Node & Web runtime files (not included in Android GitHub repository)
 node_modules/
-build/
 dist/
-coverage/
-.DS_Store
-*.log
+public/
+www/
+scripts/
+src/
+server.ts
+vite.config.ts
+tsconfig.json
+metadata.json
+bun.lock
+package.json
+package-lock.json
+vercel.json
+index.html
 .env*
-!.env.example
+
+# Gradle & Android Studio build outputs
+.gradle/
+build/
+app/build/
+*.iml
+.idea/
+.DS_Store

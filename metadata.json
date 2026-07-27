@@ -1,6 +1,0 @@
-{
-  "name": "Amharic Keyboard Android App & IME Engine",
-  "description": "Ultra-lightweight Android soft keyboard (IME) simulator & Android project builder supporting Android 2.4+ with Windows 10 Amharic Phonetic key combination mapping, dedicated language locking toggle, and physical/virtual touch keyboard support.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
