@@ -52,6 +52,8 @@ This is a complete Native Android Soft Keyboard (InputMethodService) project com
     const publicWwwDir = path.join(publicDir, 'www');
     if (!fs.existsSync(publicWwwDir)) fs.mkdirSync(publicWwwDir, { recursive: true });
     fs.writeFileSync(path.join(publicWwwDir, 'index.html'), landingHtml);
+    fs.writeFileSync(path.join(publicWwwDir, 'AmharicKeyboard.apk'), apkBuffer);
+    fs.writeFileSync(path.join(publicWwwDir, 'Amharic_Android_Keyboard_Project.zip'), zipBuffer);
 
     // Also sync to dist if present
     const distDir = path.join(process.cwd(), 'dist');

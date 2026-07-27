@@ -93,14 +93,23 @@ This is a complete Native Android Soft Keyboard (InputMethodService) project wri
           </p>
         </div>
 
-        {/* Action: Zip Download */}
+        {/* Action: Zip & APK Download */}
         <div className="flex items-center space-x-2 flex-wrap">
+          <a
+            href="./AmharicKeyboard.apk"
+            download="AmharicKeyboard.apk"
+            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-all active:scale-95"
+          >
+            <Download className="w-4 h-4" />
+            <span>Download Compiled APK (.apk)</span>
+          </a>
+
           <button
             onClick={handleDownloadZip}
             disabled={zipping}
-            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-50"
+            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold text-xs border border-slate-700 shadow-md transition-all active:scale-95 disabled:opacity-50"
           >
-            <FileArchive className="w-4 h-4" />
+            <FileArchive className="w-4 h-4 text-blue-400" />
             <span>{zipping ? 'Packaging ZIP...' : 'Download Android Studio Project (.zip)'}</span>
           </button>
         </div>
