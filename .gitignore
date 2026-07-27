@@ -19,11 +19,10 @@ index.html
 # Gradle & Android Studio build outputs
 .gradle/
 build/
-app/build/*
-!app/build/outputs/
-!app/build/outputs/apk/
-!app/build/outputs/apk/**
+app/build/
 releases/
+*.apk
+*.zip
 *.iml
 .idea/
 .DS_Store

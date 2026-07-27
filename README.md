@@ -2,40 +2,40 @@
 
 A native Android Input Method Service (IME) built entirely in **Kotlin** following the exact **Windows 10 Amharic Phonetic Keyboard layout specification**.
 
-## 🚀 Direct APK Download Links
+## 🚀 Automated APK Compilation (GitHub Actions)
 
-Download the pre-compiled, signed **3.9 MB Android APK** directly from GitHub:
+This repository includes a GitHub Actions CI pipeline (`.github/workflows/build.yml`) that compiles valid native Android APKs directly from source using JDK 17, Android SDK, and Gradle.
 
-- 📦 **[Download AmharicKeyboard.apk (Root Path)](https://github.com/hardhustlekd-max/keyboard/raw/main/AmharicKeyboard.apk)**
-- 📁 **[Download Releases/AmharicKeyboard.apk](https://github.com/hardhustlekd-max/keyboard/raw/main/releases/AmharicKeyboard.apk)**
-- 🛠️ **[Download app-release.apk (Gradle Build Output Path)](https://github.com/hardhustlekd-max/keyboard/raw/main/app/build/outputs/apk/release/app-release.apk)**
+### Download Compiled APKs:
+- Go to the **[GitHub Actions Workflows Tab](https://github.com/hardhustlekd-max/keyboard/actions)**.
+- Select the latest build run on `main`.
+- Download `AmharicKeyboard-Debug-APK` or `AmharicKeyboard-Release-APK` from the **Artifacts** section at the bottom of the run page.
 
 ---
 
 ## 📱 Features
 
-- **Native Android IME Service**: Registers seamlessly in Android System Settings as a full input method.
+- **Native Android IME Service**: Registers seamlessly in Android System Settings as a full input method (`InputMethodService`).
 - **Windows 10 Phonetic Deterministic Engine**: Implements the 7 Fidel order transformations (`ä`, `u`, `i`, `a`, `e`, `ə`, `o`), labialized combinations, punctuation, and numerals.
-- **2048-bit RSA Self-Signed APK**: Signed with a cryptographically valid v1 (JAR) PKCS7 signature block for direct installation on Android devices.
-- **Full Asset & Ethiopic Font Package**: Includes complete Phonetic lookup database, Noto Sans Ethiopic typography, and AndroidX layout runtime.
+- **Pure Native Kotlin Architecture**: Clean, zero-dependency codebase ready for compilation in Android Studio or GitHub Actions.
 
 ## 📁 Repository Structure
 
 ```
 .
-├── AmharicKeyboard.apk                       # Direct Installable Signed APK (3.9 MB)
-├── releases/
-│   └── AmharicKeyboard.apk                   # Releases folder copy
+├── .github/workflows/build.yml               # GitHub Actions CI build workflow
+├── build.gradle.kts                          # Root Gradle build configuration
+├── settings.gradle.kts                       # Project Gradle settings
+├── gradle.properties                         # Gradle options
 ├── app/
-│   ├── build/outputs/apk/release/
-│   │   ├── app-release.apk                   # Standard Android Studio Gradle output path
-│   │   └── AmharicKeyboard.apk
 │   ├── build.gradle.kts                      # App module build script
 │   └── src/main/
 │       ├── AndroidManifest.xml               # Android Manifest with IME service
-│       └── java/com/amharic/keyboard/        # Native Kotlin source code
-├── build.gradle.kts                          # Root Gradle build configuration
-├── settings.gradle.kts                       # Project Gradle settings
+│       ├── java/com/amharic/keyboard/        # Native Kotlin source code
+│       │   ├── AmharicIME.kt                 # InputMethodService implementation
+│       │   ├── PhoneticEngine.kt             # Phonetic lookup transformation
+│       │   └── SettingsActivity.kt           # Setup Activity
+│       └── res/                              # Layouts, themes, and keymaps
 └── README.md
 ```
 
@@ -47,13 +47,4 @@ Download the pre-compiled, signed **3.9 MB Android APK** directly from GitHub:
    ```
 2. Open the project in **Android Studio** (Giraffe, Hedgehog, or newer).
 3. Allow Gradle to sync dependencies.
-4. Run on an Android device or emulator (`Shift + F10`).
-
-## 📲 How to Install the APK Directly
-
-1. Download `AmharicKeyboard.apk` from the root of this repository.
-2. Open `AmharicKeyboard.apk` on your Android device (Android 5.0+).
-3. Allow "Install from Unknown Sources" if prompted.
-4. Launch "Amharic Keyboard Setup" app and tap:
-   - **Step 1:** Enable Keyboard in System Settings.
-   - **Step 2:** Switch Input Method to Amharic.
+4. Select **Build > Build Bundle(s) / APK(s) > Build APK(s)** or run on an Android device (`Shift + F10`).
