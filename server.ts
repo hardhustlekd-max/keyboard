@@ -23,14 +23,14 @@ app.post('/api/github-push', (req, res) => {
     'git add .',
     'git commit -m "Update: Amharic Android Keyboard App (Android 2.4+ supported) with Clean Minimalism theme and Windows 10 Amharic Phonetic engine" || true',
     'git branch -M main',
-    `git remote set-url origin ${remoteUrl} 2>/dev/null || git remote add origin ${remoteUrl}`,
-    'git push -u origin main --force'
+    `git push -f "${remoteUrl}" main`
   ].join(' && ');
 
   exec(commands, { cwd: process.cwd() }, (error, stdout, stderr) => {
+    let cleanErr = (stderr || error?.message || '').replace(new RegExp(token, 'g'), '***TOKEN***');
     if (error) {
-      console.error('Git push error:', stderr || error.message);
-      return res.status(500).json({ success: false, error: stderr || error.message });
+      console.error('Git push error:', cleanErr);
+      return res.status(500).json({ success: false, error: cleanErr || 'Failed to push to remote repository' });
     }
     console.log('Git push success:', stdout);
     return res.json({ success: true, message: 'Successfully pushed to GitHub repository hardhustlekd-max/keyboard', stdout });
