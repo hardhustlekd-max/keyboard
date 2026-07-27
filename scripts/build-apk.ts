@@ -708,5 +708,5 @@ export async function buildApkBuffer(): Promise<Buffer> {
   const dummyCertRsa = Buffer.alloc(256, 0x30);
   apkZip.file('META-INF/CERT.RSA', dummyCertRsa);
 
-  return await apkZip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+  return await apkZip.generateAsync({ type: 'nodebuffer', compression: 'STORE' });
 }
