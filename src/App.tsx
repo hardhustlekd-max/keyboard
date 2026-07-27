@@ -11,7 +11,7 @@ import { Lock, Sparkles, Smartphone, ShieldCheck, Zap } from 'lucide-react';
 
 export default function App() {
   const [languageMode, setLanguageMode] = useState<LanguageMode>('english');
-  const [theme, setTheme] = useState<ThemeMode>('dark');
+  const [theme, setTheme] = useState<ThemeMode>('light');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [activeTab, setActiveTab] = useState<'simulator' | 'guide' | 'android-source' | 'github'>('simulator');
   
@@ -132,7 +132,7 @@ export default function App() {
   const getAppThemeStyle = () => {
     switch (theme) {
       case 'light':
-        return 'bg-slate-100 text-slate-900';
+        return 'bg-slate-100 text-slate-800';
       case 'retro-gingerbread':
         return 'bg-zinc-950 text-amber-100 font-sans';
       case 'material-blue':
@@ -163,28 +163,42 @@ export default function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
         
         {/* Banner: Language Lock Indicator & Quick Overview */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className={`rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 border transition-colors ${
+          theme === 'light'
+            ? 'bg-white border-slate-200 text-slate-800'
+            : 'bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border-slate-800 text-slate-100'
+        }`}>
           <div className="flex items-center space-x-3">
-            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-xl transition-all shadow-md ${
+            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-xl transition-all shadow-xs ${
               languageMode === 'amharic'
-                ? 'bg-gradient-to-tr from-amber-500 to-amber-600 text-slate-950 ring-2 ring-amber-400/40'
-                : 'bg-slate-800 text-slate-400'
+                ? 'bg-blue-600 text-white ring-2 ring-blue-400/40'
+                : theme === 'light'
+                  ? 'bg-slate-100 text-slate-600 border border-slate-200'
+                  : 'bg-slate-800 text-slate-400'
             }`}>
-              {languageMode === 'amharic' ? <Lock className="w-5 h-5 text-slate-950" /> : 'EN'}
+              {languageMode === 'amharic' ? <Lock className="w-5 h-5 text-white" /> : 'EN'}
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h2 className="text-sm sm:text-base font-bold text-slate-100">
+                <h2 className={`text-sm sm:text-base font-bold ${
+                  theme === 'light' ? 'text-slate-800' : 'text-slate-100'
+                }`}>
                   {languageMode === 'amharic'
                     ? '🔒 Amharic Writing Mode (Windows 10 Phonetic)'
                     : '🔓 English Writing Mode (Default)'}
                 </h2>
-                <span className="text-[10px] bg-slate-800 text-slate-300 font-mono px-2 py-0.5 rounded border border-slate-700">
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+                  theme === 'light'
+                    ? 'bg-slate-100 text-slate-600 border-slate-200'
+                    : 'bg-slate-800 text-slate-300 border-slate-700'
+                }`}>
                   Android 2.4+ API 8 Capable
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Click the dedicated <span className="text-amber-400 font-bold">🔒 LANG LOCK</span> button on the keyboard or header to toggle between English & Windows 10 Amharic Phonetic composition.
+              <p className={`text-xs mt-0.5 ${
+                theme === 'light' ? 'text-slate-500' : 'text-slate-400'
+              }`}>
+                Click the dedicated <span className="text-blue-600 font-bold">🔒 LANG LOCK</span> button on the keyboard or header to toggle between English & Windows 10 Amharic Phonetic composition.
               </p>
             </div>
           </div>
@@ -192,10 +206,12 @@ export default function App() {
           <div className="flex items-center space-x-2 w-full md:w-auto justify-end">
             <button
               onClick={handleToggleLanguageLock}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 border ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 border ${
                 languageMode === 'amharic'
-                  ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-amber-300'
-                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-500'
+                  : theme === 'light'
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
               }`}
             >
               {languageMode === 'amharic' ? 'Switch to English' : '🔒 Lock Amharic Mode'}
@@ -213,6 +229,7 @@ export default function App() {
               languageMode={languageMode}
               onToggleLanguageLock={handleToggleLanguageLock}
               inputRef={textareaRef}
+              theme={theme}
             />
 
             <VirtualKeyboard

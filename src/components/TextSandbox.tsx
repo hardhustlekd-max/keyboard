@@ -9,6 +9,7 @@ interface TextSandboxProps {
   languageMode: LanguageMode;
   onToggleLanguageLock: () => void;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
+  theme?: ThemeMode;
 }
 
 export const TextSandbox: React.FC<TextSandboxProps> = ({
@@ -18,6 +19,7 @@ export const TextSandbox: React.FC<TextSandboxProps> = ({
   languageMode,
   onToggleLanguageLock,
   inputRef,
+  theme = 'light',
 }) => {
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -56,15 +58,30 @@ export const TextSandbox: React.FC<TextSandboxProps> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+    <div className={`w-full max-w-4xl mx-auto rounded-2xl p-4 sm:p-6 shadow-xs space-y-4 border transition-colors ${
+      theme === 'light'
+        ? 'bg-white border-slate-200 text-slate-800'
+        : 'bg-slate-900/90 border-slate-800 text-slate-100'
+    }`}>
       
       {/* Editor Header & Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
-        <div className="flex items-center space-x-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-          <h2 className="text-sm font-bold text-slate-200">
-            Interactive Editor & Test Sandbox
-          </h2>
+      <div className={`flex flex-wrap items-center justify-between gap-2 border-b pb-3 ${
+        theme === 'light' ? 'border-slate-100' : 'border-slate-800'
+      }`}>
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-base shadow-xs">
+            አ
+          </div>
+          <div>
+            <h2 className={`text-sm sm:text-base font-semibold ${
+              theme === 'light' ? 'text-slate-800' : 'text-slate-100'
+            }`}>
+              Amharic Notes & Editor
+            </h2>
+            <p className="text-[10px] text-slate-400">
+              Editing now • English & Amharic (Windows 10 Phonetic)
+            </p>
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -72,27 +89,39 @@ export const TextSandbox: React.FC<TextSandboxProps> = ({
           <button
             onClick={handleCopy}
             disabled={!text}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-xs font-semibold border border-slate-700 transition-all active:scale-95"
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 ${
+              theme === 'light'
+                ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
             title="Copy typed text to clipboard"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-blue-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
             <span>{copied ? 'Copied!' : 'Copy'}</span>
           </button>
 
           <button
             onClick={handleSpeak}
             disabled={!text || speaking}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-xs font-semibold border border-slate-700 transition-all active:scale-95"
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 ${
+              theme === 'light'
+                ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
             title="Read out text using Speech Synthesis"
           >
-            <Volume2 className={`w-3.5 h-3.5 ${speaking ? 'text-amber-400 animate-bounce' : 'text-slate-400'}`} />
+            <Volume2 className={`w-3.5 h-3.5 ${speaking ? 'text-blue-600 animate-bounce' : 'text-slate-400'}`} />
             <span>{speaking ? 'Reading...' : 'Speak'}</span>
           </button>
 
           <button
             onClick={handleClear}
             disabled={!text}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950 hover:text-rose-300 disabled:opacity-40 text-slate-300 text-xs font-semibold border border-slate-700 transition-all active:scale-95"
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 ${
+              theme === 'light'
+                ? 'bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 border-slate-200'
+                : 'bg-slate-800 hover:bg-rose-950 hover:text-rose-300 text-slate-300 border-slate-700'
+            }`}
             title="Clear editor contents"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -109,15 +138,19 @@ export const TextSandbox: React.FC<TextSandboxProps> = ({
           onChange={(e) => setText(e.target.value)}
           placeholder={
             languageMode === 'amharic'
-              ? '🔒 Amharic Language LOCKED: Type using QWERTY keys according to Windows 10 Amharic Phonetic combinations (e.g., s->ሰ, s+u->ሱ, ch->ቸ)...'
+              ? 'Type here to test phonetic combinations (e.g. h + e = ሀ, s + u = ሱ, c + h = ቸ)...'
               : 'Type here using physical keyboard or virtual soft keyboard below...'
           }
-          className="w-full h-36 sm:h-44 p-4 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 font-serif text-lg sm:text-xl leading-relaxed focus:outline-none focus:ring-2 focus:ring-amber-500/60 transition-all resize-none shadow-inner"
+          className={`w-full h-36 sm:h-44 p-4 rounded-xl text-lg sm:text-xl font-serif leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all resize-none shadow-xs border ${
+            theme === 'light'
+              ? 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400'
+              : 'bg-slate-950 border-slate-800 text-slate-100 placeholder-slate-500'
+          }`}
         />
 
         {/* Live Active Buffer Status Badge */}
         {currentBuffer && (
-          <div className="absolute bottom-3 left-3 bg-amber-500 text-slate-950 px-2.5 py-1 rounded-lg text-xs font-mono font-bold shadow-lg flex items-center space-x-1.5 animate-pulse">
+          <div className="absolute bottom-3 left-3 bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-mono font-bold shadow-md flex items-center space-x-1.5 animate-pulse">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Active Composition Buffer: "{currentBuffer}"</span>
           </div>
@@ -129,19 +162,23 @@ export const TextSandbox: React.FC<TextSandboxProps> = ({
         
         {/* Quick Sample Chips */}
         <div className="flex items-center space-x-1.5 flex-wrap">
-          <span className="text-[11px] text-slate-500">Quick Test Samples:</span>
+          <span className="text-[11px] text-slate-400 font-medium">Quick Test Samples:</span>
           {[
-            { label: 'ሰላም (Hello)', value: 'ሰላም' },
-            { label: 'ኢትዮጵያ (Ethiopia)', value: 'ኢትዮጵያ' },
-            { label: 'አመሰግናለሁ (Thank you)', value: 'አመሰግናለሁ' },
-            { label: 'መልካም ቀን (Good day)', value: 'መልካም ቀን' },
+            { label: 'ሰላም', value: 'ሰላም' },
+            { label: 'ኢትዮጵያ', value: 'ኢትዮጵያ' },
+            { label: 'አመሰግናለሁ', value: 'አመሰግናለሁ' },
+            { label: 'እውነት', value: 'እውነት' },
           ].map((sample) => (
             <button
               key={sample.label}
               onClick={() => insertSampleText(sample.value)}
-              className="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-slate-300 text-[11px] font-serif transition-all border border-slate-700/80 active:scale-95"
+              className={`px-3 py-1 rounded-lg text-xs font-serif transition-all active:scale-95 border ${
+                theme === 'light'
+                  ? 'bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border-blue-200/80 shadow-2xs font-medium'
+                  : 'bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-slate-300 border-slate-700'
+              }`}
             >
-              + {sample.label}
+              {sample.label}
             </button>
           ))}
         </div>

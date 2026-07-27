@@ -109,73 +109,94 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
     }
   };
 
-  const getKeycapStyle = (isSpecial = false, isAccent = false) => {
+  const getKeycapStyle = (isSpecial = false, isAccent = false, isVowel = false) => {
     if (isAccent) {
-      return 'bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-bold shadow-md';
+      return 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold shadow-md';
     }
     if (isSpecial) {
       return theme === 'light'
-        ? 'bg-slate-300 hover:bg-slate-400 text-slate-800 font-semibold shadow-sm'
+        ? 'bg-slate-300 hover:bg-slate-350 active:bg-slate-400 text-slate-700 font-bold shadow-xs'
         : 'bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium border border-slate-700/60 shadow-sm';
     }
     return theme === 'light'
-      ? 'bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-900 border border-slate-300/80 shadow-sm'
-      : 'bg-slate-800/90 hover:bg-slate-700 active:bg-slate-600 text-slate-100 border border-slate-700/80 shadow-sm';
+      ? `bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-200/80 shadow-xs ${isVowel ? 'text-blue-600 font-bold' : 'text-slate-700 font-medium'}`
+      : `bg-slate-800/90 hover:bg-slate-700 active:bg-slate-600 border border-slate-700/80 shadow-sm ${isVowel ? 'text-amber-300 font-bold' : 'text-slate-100 font-medium'}`;
   };
 
-  return (
-    <div className={`w-full max-w-4xl mx-auto rounded-2xl p-2.5 sm:p-4 border shadow-2xl transition-all ${getThemeContainerStyle()}`}>
-      
-      {/* Top Status Bar & Ethiopic Quick Punctuation Bar */}
-      <div className="flex items-center justify-between mb-2.5 px-2 text-xs">
-        <div className="flex items-center space-x-2">
-          <span className="text-slate-400 font-mono text-[11px]">
-            Mode:
-          </span>
-          <span
-            className={`px-2 py-0.5 rounded-md font-bold text-[11px] flex items-center space-x-1 ${
-              languageMode === 'amharic'
-                ? 'bg-amber-500 text-slate-950 shadow-sm'
-                : 'bg-slate-700 text-slate-300'
-            }`}
-          >
-            {languageMode === 'amharic' ? (
-              <>
-                <Lock className="w-3 h-3" />
-                <span>AMHARIC (Windows 10 Phonetic)</span>
-              </>
-            ) : (
-              <>
-                <Unlock className="w-3 h-3" />
-                <span>ENGLISH</span>
-              </>
-            )}
-          </span>
+  const isVowelKey = (key: string) => ['e', 't', 'u', 'i', 'o', 'a'].includes(key.toLowerCase());
 
-          {currentBuffer && (
-            <span className="bg-slate-800 text-amber-300 px-2 py-0.5 rounded text-[11px] font-mono border border-amber-500/30 animate-pulse">
+  return (
+    <div className={`w-full max-w-4xl mx-auto rounded-2xl p-2.5 sm:p-4 border transition-all ${
+      theme === 'light'
+        ? 'bg-slate-200 border-slate-300 text-slate-800 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]'
+        : getThemeContainerStyle()
+    }`}>
+      
+      {/* Candidates & Suggestions Bar */}
+      <div className={`h-10 flex gap-2 sm:gap-4 items-center justify-between px-3 sm:px-4 mb-2 rounded-xl border ${
+        theme === 'light' ? 'bg-white/80 border-slate-250 text-slate-700' : 'bg-slate-900/80 border-slate-800 text-slate-300'
+      }`}>
+        <div className="flex items-center space-x-2">
+          <span className="text-[11px] font-mono opacity-60 uppercase tracking-wider hidden xs:inline">Suggestions:</span>
+          <div className="flex gap-3 sm:gap-6 items-center text-xs sm:text-sm">
+            <span
+              onClick={() => handleKeyClick('ሰላም')}
+              className="hover:text-blue-600 cursor-pointer font-serif transition-colors"
+            >
+              ሰላም
+            </span>
+            <span
+              onClick={() => handleKeyClick('እውነት')}
+              className="font-bold border-x border-slate-300 dark:border-slate-700 px-4 sm:px-6 cursor-pointer hover:text-blue-600 transition-colors font-serif"
+            >
+              እውነት
+            </span>
+            <span
+              onClick={() => handleKeyClick('ኢትዮጵያ')}
+              className="hover:text-blue-600 cursor-pointer font-serif transition-colors hidden xs:inline"
+            >
+              ኢትዮጵያ
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {currentBuffer ? (
+            <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-[11px] font-mono font-bold shadow-xs animate-pulse">
               Buffer: "{currentBuffer}"
+            </span>
+          ) : (
+            <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded ${
+              languageMode === 'amharic' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
+            }`}>
+              {languageMode === 'amharic' ? 'Locked (Phonetic)' : 'English'}
             </span>
           )}
         </div>
+      </div>
 
-        {/* Amharic Punctuation Bar */}
-        {languageMode === 'amharic' && (
-          <div className="flex items-center space-x-1">
-            <span className="text-[10px] text-slate-400 mr-1 hidden sm:inline">Punctuation:</span>
+      {/* Ethiopic Quick Punctuation Bar (When Amharic Active) */}
+      {languageMode === 'amharic' && (
+        <div className="flex items-center justify-between mb-2 px-2 text-xs">
+          <span className="text-[10px] text-slate-500 font-mono">Ethiopic Punctuation:</span>
+          <div className="flex items-center space-x-1 sm:space-x-1.5">
             {['፡', '።', '፥', '፤', '፧'].map((p) => (
               <button
                 key={p}
                 onClick={() => handleKeyClick(p)}
-                className="px-2 py-1 bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-amber-300 rounded font-serif font-bold text-sm border border-slate-700 transition-all active:scale-95"
+                className={`px-2.5 py-1 rounded font-serif font-bold text-sm border transition-all active:scale-95 ${
+                  theme === 'light'
+                    ? 'bg-white hover:bg-blue-600 hover:text-white text-slate-800 border-slate-300 shadow-xs'
+                    : 'bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border-slate-700'
+                }`}
                 title={`Insert Amharic punctuation ${p}`}
               >
                 {p}
               </button>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Main Keys Container */}
       <div className="flex flex-col space-y-1.5 sm:space-y-2 select-none">
@@ -185,18 +206,23 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
           {(isSymbolMode ? numRow1 : row1).map((key) => {
             const displayLetter = isShiftActive ? key.toUpperCase() : key;
             const amharicPreview = languageMode === 'amharic' ? getAmharicKeycapPreview(key, isShiftActive) : '';
-            
+            const isVowel = isVowelKey(key);
+
             return (
               <button
                 key={key}
                 onClick={() => handleKeyClick(key)}
-                className={`flex-1 max-w-[44px] h-11 sm:h-12 rounded-xl flex flex-col items-center justify-center relative transition-all duration-75 active:scale-95 ${getKeycapStyle()}`}
+                className={`flex-1 max-w-[44px] h-12 sm:h-14 rounded-lg sm:rounded-xl flex flex-col items-center justify-center relative transition-all duration-75 active:scale-95 ${getKeycapStyle(false, false, isVowel)}`}
               >
-                <span className="text-sm sm:text-base font-semibold leading-tight">
+                <span className={`text-sm sm:text-lg font-medium leading-tight ${
+                  isVowel && theme === 'light' ? 'text-blue-600 font-bold' : ''
+                }`}>
                   {displayLetter}
                 </span>
                 {amharicPreview && (
-                  <span className="text-[10px] text-amber-400 font-serif font-bold leading-none -mt-0.5">
+                  <span className={`text-[10px] font-serif font-bold leading-none -mt-0.5 ${
+                    theme === 'light' ? 'text-blue-600' : 'text-amber-400'
+                  }`}>
                     {amharicPreview}
                   </span>
                 )}
@@ -206,22 +232,27 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
         </div>
 
         {/* ROW 2 */}
-        <div className="flex justify-center space-x-1 sm:space-x-1.5 px-2 sm:px-4">
+        <div className="flex justify-center space-x-1 sm:space-x-1.5 px-1 sm:px-2">
           {(isSymbolMode ? numRow2 : row2).map((key) => {
             const displayLetter = isShiftActive ? key.toUpperCase() : key;
             const amharicPreview = languageMode === 'amharic' ? getAmharicKeycapPreview(key, isShiftActive) : '';
+            const isVowel = isVowelKey(key);
 
             return (
               <button
                 key={key}
                 onClick={() => handleKeyClick(key)}
-                className={`flex-1 max-w-[44px] h-11 sm:h-12 rounded-xl flex flex-col items-center justify-center relative transition-all duration-75 active:scale-95 ${getKeycapStyle()}`}
+                className={`flex-1 max-w-[44px] h-12 sm:h-14 rounded-lg sm:rounded-xl flex flex-col items-center justify-center relative transition-all duration-75 active:scale-95 ${getKeycapStyle(false, false, isVowel)}`}
               >
-                <span className="text-sm sm:text-base font-semibold leading-tight">
+                <span className={`text-sm sm:text-lg font-medium leading-tight ${
+                  isVowel && theme === 'light' ? 'text-blue-600 font-bold' : ''
+                }`}>
                   {displayLetter}
                 </span>
                 {amharicPreview && (
-                  <span className="text-[10px] text-amber-400 font-serif font-bold leading-none -mt-0.5">
+                  <span className={`text-[10px] font-serif font-bold leading-none -mt-0.5 ${
+                    theme === 'light' ? 'text-blue-600' : 'text-amber-400'
+                  }`}>
                     {amharicPreview}
                   </span>
                 )}
@@ -235,31 +266,37 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
           {/* Shift Button */}
           <button
             onClick={handleShiftClick}
-            className={`w-12 sm:w-16 h-11 sm:h-12 rounded-xl flex items-center justify-center transition-all duration-75 active:scale-95 ${
+            className={`w-14 sm:w-20 h-12 sm:h-14 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-75 active:scale-95 ${
               isShiftActive
-                ? 'bg-amber-500 text-slate-950 font-bold shadow-md ring-2 ring-amber-400/50'
+                ? 'bg-blue-600 text-white font-bold shadow-md border-2 border-blue-400'
                 : getKeycapStyle(true)
             }`}
             title="Toggle Shift / Uppercase / Alternate Amharic"
           >
-            <ArrowUp className={`w-4 h-4 ${isShiftActive ? 'stroke-[3]' : ''}`} />
+            <span className="text-xs font-bold uppercase tracking-tighter sm:inline hidden">Shift</span>
+            <ArrowUp className={`w-4 h-4 sm:ml-1 ${isShiftActive ? 'stroke-[3]' : ''}`} />
           </button>
 
           {(isSymbolMode ? numRow3 : row3).map((key) => {
             const displayLetter = isShiftActive ? key.toUpperCase() : key;
             const amharicPreview = languageMode === 'amharic' ? getAmharicKeycapPreview(key, isShiftActive) : '';
+            const isVowel = isVowelKey(key);
 
             return (
               <button
                 key={key}
                 onClick={() => handleKeyClick(key)}
-                className={`flex-1 max-w-[44px] h-11 sm:h-12 rounded-xl flex flex-col items-center justify-center relative transition-all duration-75 active:scale-95 ${getKeycapStyle()}`}
+                className={`flex-1 max-w-[44px] h-12 sm:h-14 rounded-lg sm:rounded-xl flex flex-col items-center justify-center relative transition-all duration-75 active:scale-95 ${getKeycapStyle(false, false, isVowel)}`}
               >
-                <span className="text-sm sm:text-base font-semibold leading-tight">
+                <span className={`text-sm sm:text-lg font-medium leading-tight ${
+                  isVowel && theme === 'light' ? 'text-blue-600 font-bold' : ''
+                }`}>
                   {displayLetter}
                 </span>
                 {amharicPreview && (
-                  <span className="text-[10px] text-amber-400 font-serif font-bold leading-none -mt-0.5">
+                  <span className={`text-[10px] font-serif font-bold leading-none -mt-0.5 ${
+                    theme === 'light' ? 'text-blue-600' : 'text-amber-400'
+                  }`}>
                     {amharicPreview}
                   </span>
                 )}
@@ -270,68 +307,67 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
           {/* Backspace Button */}
           <button
             onClick={handleBackspaceClick}
-            className={`w-12 sm:w-16 h-11 sm:h-12 rounded-xl flex items-center justify-center transition-all duration-75 active:scale-95 ${getKeycapStyle(true)}`}
+            className={`w-14 sm:w-20 h-12 sm:h-14 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-75 active:scale-95 ${getKeycapStyle(true)}`}
             title="Backspace"
           >
-            <Delete className="w-4 h-4" />
+            <span className="text-xl">⌫</span>
           </button>
         </div>
 
-        {/* ROW 4 (Bottom Action Row: 123 | DEDICATED LANG LOCK | SPACE | ENTER) */}
+        {/* ROW 4 (Function Row: ?123 | LANGUAGE LOCK BUTTON | SPACE | RETURN) */}
         <div className="flex justify-center space-x-1.5 sm:space-x-2 pt-1">
           
           {/* Symbol Mode Toggle */}
           <button
             onClick={() => setIsSymbolMode(!isSymbolMode)}
-            className={`w-14 sm:w-16 h-11 sm:h-12 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center transition-all duration-75 active:scale-95 ${getKeycapStyle(true)}`}
+            className={`w-16 sm:w-20 h-12 sm:h-14 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center transition-all duration-75 active:scale-95 ${getKeycapStyle(true)}`}
           >
             {isSymbolMode ? 'ABC' : '?123'}
           </button>
 
-          {/* DEDICATED LANGUAGE LOCKING BUTTON */}
+          {/* DEDICATED LANGUAGE LOCKING BUTTON (Clean Minimalism Mockup Style) */}
           <button
             id="virtual-keyboard-lang-lock-btn"
             onClick={handleLangLockClick}
-            className={`px-3 sm:px-4 h-11 sm:h-12 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 transition-all duration-100 active:scale-95 shadow-md border ${
+            className={`w-20 sm:w-28 h-12 sm:h-14 rounded-lg sm:rounded-xl flex flex-col items-center justify-center transition-all duration-100 active:scale-95 shadow-md border-2 cursor-pointer ${
               languageMode === 'amharic'
-                ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 border-amber-300 ring-2 ring-amber-400/40 font-extrabold'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-400'
+                : 'bg-slate-300 hover:bg-slate-400 text-slate-700 border-slate-400'
             }`}
             title="Dedicated Language Lock Toggle Button"
           >
-            {languageMode === 'amharic' ? (
-              <>
-                <Lock className="w-3.5 h-3.5 text-slate-950" />
-                <span className="hidden xs:inline">🔒 AMHARIC LOCKED</span>
-                <span className="xs:hidden">🔒 AM</span>
-              </>
-            ) : (
-              <>
-                <Unlock className="w-3.5 h-3.5 text-slate-400" />
-                <span className="hidden xs:inline">🔓 LANG LOCK</span>
-                <span className="xs:hidden">🔓 EN</span>
-              </>
-            )}
+            <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider leading-none opacity-90">
+              {languageMode === 'amharic' ? 'Locked' : 'Unlocked'}
+            </span>
+            <span className="text-xs sm:text-sm font-bold tracking-tight mt-0.5">
+              {languageMode === 'amharic' ? 'አማርኛ' : 'English'}
+            </span>
           </button>
 
           {/* Spacebar */}
           <button
             onClick={handleSpaceClick}
-            className={`flex-1 h-11 sm:h-12 rounded-xl flex items-center justify-center space-x-1 text-xs font-medium transition-all duration-75 active:scale-98 ${getKeycapStyle()}`}
+            className={`flex-1 h-12 sm:h-14 rounded-lg sm:rounded-xl flex items-center justify-center text-sm font-medium transition-all duration-75 active:scale-98 ${
+              theme === 'light'
+                ? 'bg-white hover:bg-slate-50 text-slate-500 border border-slate-200 shadow-xs'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 shadow-sm'
+            }`}
           >
-            <Space className="w-4 h-4 opacity-40" />
-            <span className="text-xs text-slate-400">
-              {languageMode === 'amharic' ? 'አማርኛ (Space)' : 'English (Space)'}
-            </span>
+            <Space className="w-4 h-4 opacity-40 mr-1 hidden sm:inline" />
+            <span>Space</span>
           </button>
 
-          {/* Enter Button */}
+          {/* Return / Enter Button */}
           <button
             onClick={handleEnterClick}
-            className={`w-14 sm:w-20 h-11 sm:h-12 rounded-xl font-bold text-xs flex items-center justify-center space-x-1 transition-all duration-75 active:scale-95 ${getKeycapStyle(false, true)}`}
+            className={`w-20 sm:w-32 h-12 sm:h-14 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-center space-x-1 transition-all duration-75 active:scale-95 ${
+              theme === 'light'
+                ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-xs'
+                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+            }`}
           >
-            <CornerDownLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Enter</span>
+            <CornerDownLeft className="w-4 h-4 mr-1 hidden sm:inline" />
+            <span>Return</span>
           </button>
 
         </div>

@@ -26,33 +26,45 @@ export const Navbar: React.FC<NavbarProps> = ({
   githubPushed,
 }) => {
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-slate-900/90 border-b border-slate-800 text-slate-100 shadow-lg">
+    <header className={`sticky top-0 z-50 backdrop-blur-md border-b transition-colors duration-200 shadow-xs ${
+      theme === 'light'
+        ? 'bg-white/95 border-slate-200 text-slate-800'
+        : 'bg-slate-900/90 border-slate-800 text-slate-100'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
         {/* App Title & Logo */}
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-emerald-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-xs">
             አ
           </div>
           <div>
-            <h1 className="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-amber-200 via-emerald-200 to-indigo-200 bg-clip-text text-transparent">
+            <h1 className={`text-base sm:text-lg font-bold tracking-tight ${
+              theme === 'light' ? 'text-slate-800' : 'text-slate-100'
+            }`}>
               Amharic Android Keyboard
             </h1>
             <p className="text-xs text-slate-400 hidden sm:block">
-              Android 2.4+ Compatible • Windows 10 Phonetic Engine
+              Android 2.4+ Compatible • Clean Minimalism Engine
             </p>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <nav className="hidden md:flex items-center space-x-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60">
+        <nav className={`hidden md:flex items-center space-x-1 p-1 rounded-xl border ${
+          theme === 'light'
+            ? 'bg-slate-100 border-slate-200'
+            : 'bg-slate-800/80 border-slate-700/60'
+        }`}>
           <button
             id="nav-tab-simulator"
             onClick={() => onTabChange('simulator')}
             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === 'simulator'
-                ? 'bg-amber-500 text-slate-950 font-semibold shadow-sm'
-                : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                : theme === 'light'
+                  ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
             }`}
           >
             <Keyboard className="w-3.5 h-3.5" />
@@ -64,8 +76,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => onTabChange('guide')}
             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === 'guide'
-                ? 'bg-amber-500 text-slate-950 font-semibold shadow-sm'
-                : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                : theme === 'light'
+                  ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
@@ -77,8 +91,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => onTabChange('android-source')}
             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === 'android-source'
-                ? 'bg-amber-500 text-slate-950 font-semibold shadow-sm'
-                : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                : theme === 'light'
+                  ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
             }`}
           >
             <Smartphone className="w-3.5 h-3.5" />
@@ -90,8 +106,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => onTabChange('github')}
             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === 'github'
-                ? 'bg-emerald-500 text-slate-950 font-semibold shadow-sm'
-                : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                : theme === 'light'
+                  ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
             }`}
           >
             <Github className="w-3.5 h-3.5" />
@@ -109,16 +127,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="nav-lang-lock-toggle"
             onClick={onToggleLanguageLock}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 border ${
+            className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl font-bold text-xs transition-all shadow-xs active:scale-95 border ${
               languageMode === 'amharic'
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 border-amber-300 ring-2 ring-amber-400/30'
-                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750 hover:text-white'
+                ? 'bg-blue-600 text-white border-blue-400 ring-2 ring-blue-500/30'
+                : theme === 'light'
+                  ? 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                  : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750 hover:text-white'
             }`}
             title="Toggle Amharic Windows 10 Language Lock"
           >
             {languageMode === 'amharic' ? (
               <>
-                <Lock className="w-3.5 h-3.5 text-slate-950 animate-pulse" />
+                <Lock className="w-3.5 h-3.5 text-white animate-pulse" />
                 <span>AMHARIC LOCKED (አማርኛ)</span>
               </>
             ) : (
@@ -133,10 +153,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="nav-sound-toggle"
             onClick={onToggleSound}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 transition-all"
+            className={`p-2 rounded-xl border transition-all ${
+              theme === 'light'
+                ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700/80'
+            }`}
             title={soundEnabled ? 'Disable Key Click Audio' : 'Enable Key Click Audio'}
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
+            {soundEnabled ? <Volume2 className="w-4 h-4 text-blue-600" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
           </button>
 
           {/* Theme Selector */}
@@ -144,10 +168,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             id="nav-theme-select"
             value={theme}
             onChange={(e) => onThemeChange(e.target.value as ThemeMode)}
-            className="bg-slate-800 text-slate-200 border border-slate-700 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className={`border text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              theme === 'light'
+                ? 'bg-slate-100 text-slate-800 border-slate-200'
+                : 'bg-slate-800 text-slate-200 border-slate-700'
+            }`}
           >
+            <option value="light">Clean Minimalism (Light)</option>
             <option value="dark">Dark Theme</option>
-            <option value="light">Light Theme</option>
             <option value="retro-gingerbread">Gingerbread (Android 2.3/2.4)</option>
             <option value="material-blue">Material Blue</option>
           </select>
@@ -156,31 +184,33 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Mobile Tab Bar */}
-      <div className="md:hidden flex items-center justify-around bg-slate-850 border-t border-slate-800 py-2 px-2 text-xs">
+      <div className={`md:hidden flex items-center justify-around border-t py-2 px-2 text-xs ${
+        theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-slate-850 border-slate-800'
+      }`}>
         <button
           onClick={() => onTabChange('simulator')}
-          className={`flex flex-col items-center py-1 ${activeTab === 'simulator' ? 'text-amber-400 font-bold' : 'text-slate-400'}`}
+          className={`flex flex-col items-center py-1 ${activeTab === 'simulator' ? 'text-blue-600 font-bold' : 'text-slate-400'}`}
         >
           <Keyboard className="w-4 h-4" />
           <span>Keyboard</span>
         </button>
         <button
           onClick={() => onTabChange('guide')}
-          className={`flex flex-col items-center py-1 ${activeTab === 'guide' ? 'text-amber-400 font-bold' : 'text-slate-400'}`}
+          className={`flex flex-col items-center py-1 ${activeTab === 'guide' ? 'text-blue-600 font-bold' : 'text-slate-400'}`}
         >
           <BookOpen className="w-4 h-4" />
           <span>Guide</span>
         </button>
         <button
           onClick={() => onTabChange('android-source')}
-          className={`flex flex-col items-center py-1 ${activeTab === 'android-source' ? 'text-amber-400 font-bold' : 'text-slate-400'}`}
+          className={`flex flex-col items-center py-1 ${activeTab === 'android-source' ? 'text-blue-600 font-bold' : 'text-slate-400'}`}
         >
           <Smartphone className="w-4 h-4" />
           <span>Source Code</span>
         </button>
         <button
           onClick={() => onTabChange('github')}
-          className={`flex flex-col items-center py-1 ${activeTab === 'github' ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
+          className={`flex flex-col items-center py-1 ${activeTab === 'github' ? 'text-blue-600 font-bold' : 'text-slate-400'}`}
         >
           <Github className="w-4 h-4" />
           <span>GitHub</span>
