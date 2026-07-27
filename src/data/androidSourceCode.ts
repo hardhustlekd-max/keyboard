@@ -1,19 +1,241 @@
 /**
- * Android 2.4+ (API 8 to API 35+) Amharic Keyboard Source Files
+ * Native Android (Kotlin & Java) Source Files for Amharic Soft Keyboard (IME)
  * 
- * Production-ready, ultra-lightweight Android Java and XML source files
- * implementing an InputMethodService with Windows 10 Amharic Phonetic composition
- * and dedicated language locking toggle.
+ * Supports Android 2.4 (API 8) up to Android 15 (API 35+).
+ * Pure native InputMethodService with Windows 10 Amharic Phonetic Engine,
+ * dedicated Language Lock key, zero external runtime dependencies, and ultra-lightweight memory footprint.
  */
 
 import { AndroidCodeFile } from '../types';
 
 export const ANDROID_FILES: AndroidCodeFile[] = [
   {
+    filename: 'AmharicIME.kt',
+    path: 'app/src/main/java/com/amharic/keyboard/AmharicIME.kt',
+    language: 'kotlin',
+    description: 'Kotlin InputMethodService managing soft keyboard views, touch events, language locking state (English vs Amharic), and phonetic key dispatching.',
+    content: `package com.amharic.keyboard
+
+import android.inputmethodservice.InputMethodService
+import android.inputmethodservice.Keyboard
+import android.inputmethodservice.KeyboardView
+import android.view.KeyEvent
+import android.view.View
+import android.view.inputmethod.InputConnection
+import android.widget.Toast
+
+/**
+ * Native Kotlin Amharic Soft Keyboard (InputMethodService)
+ * 
+ * Compatible with Android 2.4 (API 8) up to Android 15 (API 35+).
+ * Implements dedicated Language Locking (English default vs. Windows 10 Amharic Phonetic).
+ */
+class AmharicIME : InputMethodService(), KeyboardView.OnKeyboardActionListener {
+
+    companion object {
+        const val KEYCODE_LANG_LOCK = -101 // Dedicated Language Lock Toggle
+        const val KEYCODE_SHIFT = Keyboard.KEYCODE_SHIFT
+        const val KEYCODE_DELETE = Keyboard.KEYCODE_DELETE
+        const val KEYCODE_DONE = Keyboard.KEYCODE_DONE
+    }
+
+    private var keyboardView: KeyboardView? = null
+    private var qwertyKeyboard: Keyboard? = null
+    
+    // Core IME State
+    private var isAmharicLocked = false
+    private var isShifted = false
+    private var currentSyllableBuffer = ""
+
+    override fun onCreateInputView(): View {
+        keyboardView = layoutInflater.inflate(R.layout.keyboard_view, null) as KeyboardView
+        qwertyKeyboard = Keyboard(this, R.xml.qwerty_layout)
+        keyboardView?.apply {
+            keyboard = qwertyKeyboard
+            setOnKeyboardActionListener(this@AmharicIME)
+        }
+        return keyboardView!!
+    }
+
+    override fun onKey(primaryCode: Int, keyCodes: IntArray?) {
+        val ic: InputConnection = currentInputConnection ?: return
+
+        when (primaryCode) {
+            KEYCODE_LANG_LOCK -> {
+                // Toggle Language Lock between English & Windows 10 Amharic Phonetic
+                isAmharicLocked = !isAmharicLocked
+                currentSyllableBuffer = ""
+                
+                val msg = if (isAmharicLocked) 
+                    "Amharic Language LOCKED (Windows 10 Phonetic)" 
+                else 
+                    "English Language LOCKED"
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                
+                keyboardView?.invalidateAllKeys()
+            }
+
+            KEYCODE_DELETE -> {
+                if (currentSyllableBuffer.isNotEmpty()) {
+                    currentSyllableBuffer = ""
+                }
+                ic.deleteSurroundingText(1, 0)
+            }
+
+            KEYCODE_SHIFT -> {
+                isShifted = !isShifted
+                qwertyKeyboard?.isShifted = isShifted
+                keyboardView?.invalidateAllKeys()
+            }
+
+            KEYCODE_DONE -> {
+                ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+                ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+                currentSyllableBuffer = ""
+            }
+
+            else -> {
+                var codeChar = primaryCode.toChar()
+                
+                if (isShifted) {
+                    codeChar = codeChar.uppercaseChar()
+                    isShifted = false
+                    qwertyKeyboard?.isShifted = false
+                    keyboardView?.invalidateAllKeys()
+                }
+
+                if (isAmharicLocked) {
+                    // Process through Kotlin Windows 10 Amharic Phonetic Engine
+                    val res = PhoneticEngineKt.processKey(codeChar.toString(), currentSyllableBuffer)
+                    
+                    if (res.replaceLength > 0) {
+                        ic.deleteSurroundingText(res.replaceLength, 0)
+                    }
+                    ic.commitText(res.outputChar, 1)
+                    currentSyllableBuffer = res.newBuffer
+                } else {
+                    // Standard English input mode
+                    ic.commitText(codeChar.toString(), 1)
+                    currentSyllableBuffer = ""
+                }
+            }
+        }
+    }
+
+    override fun onPress(primaryCode: Int) {}
+    override fun onRelease(primaryCode: Int) {}
+    override fun onText(text: CharSequence?) {}
+    override fun swipeLeft() {}
+    override fun swipeRight() {}
+    override fun swipeDown() {}
+    override fun swipeUp() {}
+}
+`,
+  },
+  {
+    filename: 'PhoneticEngineKt.kt',
+    path: 'app/src/main/java/com/amharic/keyboard/PhoneticEngineKt.kt',
+    language: 'kotlin',
+    description: 'High-performance Kotlin object implementing Windows 10 Amharic Phonetic letter composition logic.',
+    content: `package com.amharic.keyboard
+
+/**
+ * Pure Kotlin Implementation of Windows 10 Amharic Phonetic Composition Engine.
+ * Supports all 7 orders + labialized forms + digraphs (ch, zh, ny, ts, etc.).
+ */
+object PhoneticEngineKt {
+
+    data class Result(
+        val outputChar: String,
+        val replaceLength: Int,
+        val newBuffer: String
+    )
+
+    // Consonant Family Map (Index: 0=1st, 1=2nd, 2=3rd, 3=4th, 4=5th, 5=6th, 6=7th, 7=labialized)
+    private val FAMILIES = mapOf(
+        "h" to arrayOf("ሀ", "ሁ", "ሂ", "ሃ", "ሄ", "ህ", "ሆ", "ኋ"),
+        "H" to arrayOf("ሐ", "ሑ", "ሒ", "ሓ", "ሔ", "ሕ", "ሖ", "ሗ"),
+        "l" to arrayOf("ለ", "ሉ", "ሊ", "ላ", "ሌ", "ል", "ሎ", "ሏ"),
+        "m" to arrayOf("መ", "ሙ", "ሚ", "ማ", "ሜ", "ም", "ሞ", "ሟ"),
+        "r" to arrayOf("ረ", "ሩ", "ሪ", "ራ", "ሬ", "ር", "ሮ", "ሯ"),
+        "s" to arrayOf("ሰ", "ሱ", "ሲ", "ሳ", "ሴ", "ስ", "ሶ", "ሷ"),
+        "S" to arrayOf("ሠ", "ሡ", "ሢ", "ሣ", "ሤ", "ሥ", "ሦ", "ሧ"),
+        "q" to arrayOf("ቀ", "ቁ", "ቂ", "ቃ", "ቄ", "ቅ", "ቆ", "ቋ"),
+        "b" to arrayOf("በ", "ቡ", "ቢ", "ባ", "ቤ", "ብ", "ቦ", "ቧ"),
+        "v" to arrayOf("ቨ", "ቩ", "ቪ", "ቫ", "ቬ", "ቭ", "ቮ", "ቯ"),
+        "t" to arrayOf("ተ", "ቱ", "ቲ", "ታ", "ቴ", "ት", "ቶ", "ቷ"),
+        "ch" to arrayOf("ቸ", "ቹ", "ቺ", "ቻ", "ቼ", "ች", "ቾ", "ቿ"),
+        "n" to arrayOf("ነ", "ኑ", "ኒ", "ና", "ኔ", "ን", "ኖ", "ኗ"),
+        "N" to arrayOf("ኘ", "ኙ", "ኚ", "ኛ", "፜", "ኝ", "ኞ", "፝"),
+        "ny" to arrayOf("ኘ", "ኙ", "ኚ", "ኛ", "፜", "ኝ", "ኞ", "፝"),
+        "a" to arrayOf("አ", "ኡ", "ኢ", "ኣ", "ኤ", "እ", "ኦ", "ኧ"),
+        "A" to arrayOf("ዐ", "ዑ", "ዒ", "ዓ", "ዔ", "ዕ", "ዖ", ""),
+        "k" to arrayOf("ከ", "ኩ", "ኪ", "ካ", "ኬ", "ክ", "ኮ", "ኳ"),
+        "w" to arrayOf("ወ", "ዉ", "ዊ", "ዋ", "ዌ", "ው", "ዎ", ""),
+        "z" to arrayOf("ዘ", "ዙ", "ዚ", "ዛ", "ዜ", "ዝ", "ዞ", "ዟ"),
+        "Z" to arrayOf("ዠ", "ዡ", "ዢ", "ዣ", "ዤ", "ዥ", "ዦ", "ዧ"),
+        "zh" to arrayOf("ዠ", "ዡ", "ዢ", "ዣ", "ዤ", "ዥ", "ዦ", "ዧ"),
+        "y" to arrayOf("የ", "ዩ", "ዪ", "ያ", "ዬ", "ይ", "ዮ", ""),
+        "d" to arrayOf("ደ", "ዱ", "ዲ", "ዳ", "ዴ", "ድ", "ዶ", "ዷ"),
+        "j" to arrayOf("ጀ", "ጁ", "ጂ", "ጃ", "ጄ", "ጅ", "ጆ", "ጇ"),
+        "g" to arrayOf("ገ", "ጉ", "ጊ", "ጋ", "ጌ", "ግ", "ጎ", "ጓ"),
+        "T" to arrayOf("ጠ", "ጡ", "ጢ", "ጣ", "ጤ", "ጥ", "ጦ", "ጧ"),
+        "C" to arrayOf("ጨ", "ጩ", "ጪ", "ጫ", "ጬ", "ጭ", "ጮ", "ጯ"),
+        "P" to arrayOf("ጰ", "ጱ", "ጲ", "ጳ", "ጴ", "ጵ", "ጶ", "<ctrl42>"),
+        "ts" to arrayOf("ጸ", "ጹ", "ጺ", "ጻ", "ጼ", "ጽ", "ጾ", "ጿ"),
+        "f" to arrayOf("ፈ", "ፉ", "ፊ", "ፋ", "ፌ", "ፍ", "ፎ", "ፏ"),
+        "p" to arrayOf("ፐ", "ፑ", "ፒ", "ፓ", "ፔ", "ፕ", "ፖ", "ፗ")
+    )
+
+    fun processKey(key: String, currentBuffer: String): Result {
+        val combined = currentBuffer + key
+
+        // Punctuation
+        if (key == ":" && currentBuffer == ":") return Result("፡", 1, "")
+        if (key == ":" && currentBuffer == "::") return Result("።", 1, "")
+
+        // Digraphs (ch, zh, ny, ts)
+        if (combined in setOf("ch", "zh", "ny", "ts")) {
+            val orders = FAMILIES[combined] ?: return Result(key, 0, "")
+            return Result(orders[0], currentBuffer.length, combined)
+        }
+
+        // Active consonant buffer conversion via vowel modifiers
+        if (currentBuffer.isNotEmpty() && FAMILIES.containsKey(currentBuffer)) {
+            val orders = FAMILIES[currentBuffer]!!
+            return when (key.lowercase()) {
+                "u" -> Result(orders[1], 1, "")
+                "i" -> Result(orders[2], 1, "")
+                "a" -> Result(orders[3], 1, "")
+                "e" -> Result(orders[4], 1, "")
+                "o" -> Result(orders[6], 1, "")
+                "w" -> if (orders.size > 7 && orders[7].isNotEmpty()) Result(orders[7], 1, "") else Result(key, 0, "")
+                else -> {
+                    if (key == "I") Result(orders[5], 1, "")
+                    else if (FAMILIES.containsKey(key)) {
+                        val newOrders = FAMILIES[key]!!
+                        Result(newOrders[0], 0, key)
+                    } else Result(key, 0, "")
+                }
+            }
+        }
+
+        // New consonant key
+        if (FAMILIES.containsKey(key)) {
+            val orders = FAMILIES[key]!!
+            return Result(orders[0], 0, key)
+        }
+
+        return Result(key, 0, "")
+    }
+}
+`,
+  },
+  {
     filename: 'AmharicIME.java',
     path: 'app/src/main/java/com/amharic/keyboard/AmharicIME.java',
     language: 'java',
-    description: 'Main InputMethodService managing keyboard views, touch events, language locking state, and key dispatching.',
+    description: 'Pure Java InputMethodService managing keyboard views, touch events, language locking state, and key dispatching.',
     content: `package com.amharic.keyboard;
 
 import android.inputmethodservice.InputMethodService;
@@ -25,16 +247,12 @@ import android.view.inputmethod.InputConnection;
 import android.widget.Toast;
 
 /**
- * Ultra-Lightweight Amharic Soft Keyboard (InputMethodService)
- * 
- * Supports all Android versions from Android 2.4 (Gingerbread/API 8+) up to Android 15 (API 35+).
- * Features dedicated Language Locking state (English default vs. Windows 10 Amharic Phonetic).
- * Zero external runtime dependencies to keep memory consumption under 2MB.
+ * Pure Java Amharic Soft Keyboard (InputMethodService)
+ * Compatible back to Android 2.4 (API 8) up to Android 15 (API 35+).
  */
 public class AmharicIME extends InputMethodService implements KeyboardView.OnKeyboardActionListener {
 
-    // Custom Key Codes for Keyboard XML
-    public static final int KEYCODE_LANG_LOCK = -101; // Dedicated Language Lock Toggle
+    public static final int KEYCODE_LANG_LOCK = -101;
     public static final int KEYCODE_SHIFT = Keyboard.KEYCODE_SHIFT;
     public static final int KEYCODE_DELETE = Keyboard.KEYCODE_DELETE;
     public static final int KEYCODE_DONE = Keyboard.KEYCODE_DONE;
@@ -42,14 +260,12 @@ public class AmharicIME extends InputMethodService implements KeyboardView.OnKey
     private KeyboardView mKeyboardView;
     private Keyboard mQwertyKeyboard;
     
-    // Core IME States
-    private boolean isAmharicLocked = false; // Language Lock state (Default = English)
+    private boolean isAmharicLocked = false;
     private boolean isShifted = false;
-    private String currentSyllableBuffer = ""; // Uncommitted QWERTY sequence for Amharic composition
+    private String currentSyllableBuffer = "";
 
     @Override
     public View onCreateInputView() {
-        // Inflate lightweight KeyboardView layout (compatible back to Android 2.4 / API 8)
         mKeyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
         mQwertyKeyboard = new Keyboard(this, R.xml.qwerty_layout);
         mKeyboardView.setKeyboard(mQwertyKeyboard);
@@ -64,16 +280,15 @@ public class AmharicIME extends InputMethodService implements KeyboardView.OnKey
 
         switch (primaryCode) {
             case KEYCODE_LANG_LOCK:
-                // Toggle Language Lock between English & Windows 10 Amharic Phonetic
                 isAmharicLocked = !isAmharicLocked;
-                currentSyllableBuffer = ""; // Clear active buffer on language switch
+                currentSyllableBuffer = "";
                 
                 String toastMsg = isAmharicLocked ? 
                     "Amharic Language LOCKED (Windows 10 Phonetic)" : 
                     "English Language LOCKED";
                 Toast.makeText(this, toastMsg, Toast.LENGTH_SHORT).show();
                 
-                updateKeyboardLabels();
+                mKeyboardView.invalidateAllKeys();
                 break;
 
             case KEYCODE_DELETE:
@@ -100,13 +315,12 @@ public class AmharicIME extends InputMethodService implements KeyboardView.OnKey
                 
                 if (isShifted) {
                     codeChar = Character.toUpperCase(codeChar);
-                    isShifted = false; // Reset single shift
+                    isShifted = false;
                     mQwertyKeyboard.setShifted(false);
                     mKeyboardView.invalidateAllKeys();
                 }
 
                 if (isAmharicLocked) {
-                    // Process key through Windows 10 Amharic Phonetic Engine
                     PhoneticEngine.Result res = PhoneticEngine.processKey(String.valueOf(codeChar), currentSyllableBuffer);
                     
                     if (res.replaceLength > 0) {
@@ -115,7 +329,6 @@ public class AmharicIME extends InputMethodService implements KeyboardView.OnKey
                     ic.commitText(res.outputChar, 1);
                     currentSyllableBuffer = res.newBuffer;
                 } else {
-                    // Standard English input mode
                     ic.commitText(String.valueOf(codeChar), 1);
                     currentSyllableBuffer = "";
                 }
@@ -123,26 +336,13 @@ public class AmharicIME extends InputMethodService implements KeyboardView.OnKey
         }
     }
 
-    private void updateKeyboardLabels() {
-        if (mKeyboardView != null) {
-            mKeyboardView.invalidateAllKeys();
-        }
-    }
-
-    @Override
-    public void onPress(int primaryCode) {}
-    @Override
-    public void onRelease(int primaryCode) {}
-    @Override
-    public void onText(CharSequence text) {}
-    @Override
-    public void swipeLeft() {}
-    @Override
-    public void swipeRight() {}
-    @Override
-    public void swipeDown() {}
-    @Override
-    public void swipeUp() {}
+    @Override public void onPress(int primaryCode) {}
+    @Override public void onRelease(int primaryCode) {}
+    @Override public void onText(CharSequence text) {}
+    @Override public void swipeLeft() {}
+    @Override public void swipeRight() {}
+    @Override public void swipeDown() {}
+    @Override public void swipeUp() {}
 }
 `,
   },
@@ -150,16 +350,12 @@ public class AmharicIME extends InputMethodService implements KeyboardView.OnKey
     filename: 'PhoneticEngine.java',
     path: 'app/src/main/java/com/amharic/keyboard/PhoneticEngine.java',
     language: 'java',
-    description: 'High-performance Java class executing Windows 10 Amharic Phonetic key combination rules with zero allocation overhead.',
+    description: 'Pure Java class executing Windows 10 Amharic Phonetic key combination rules.',
     content: `package com.amharic.keyboard;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Pure Java Implementation of Windows 10 Amharic Phonetic Engine.
- * Compatible with Android 2.4 (Froyo/Gingerbread) up to Android 15.
- */
 public class PhoneticEngine {
 
     public static class Result {
@@ -174,11 +370,9 @@ public class PhoneticEngine {
         }
     }
 
-    // Amharic Consonant Family Mappings (Order 1 through 7 + Labialized 8th Order)
     private static final Map<String, String[]> FAMILIES = new HashMap<String, String[]>();
 
     static {
-        // Index: 0=1st, 1=2nd, 2=3rd, 3=4th, 4=5th, 5=6th, 6=7th, 7=labialized
         FAMILIES.put("h", new String[]{"ሀ", "ሁ", "ሂ", "ሃ", "ሄ", "ህ", "ሆ", "ኋ"});
         FAMILIES.put("H", new String[]{"ሐ", "ሑ", "ሒ", "ሓ", "ሔ", "ሕ", "ሖ", "ሗ"});
         FAMILIES.put("l", new String[]{"ለ", "ሉ", "ሊ", "ላ", "ሌ", "ል", "ሎ", "ሏ"});
@@ -207,7 +401,7 @@ public class PhoneticEngine {
         FAMILIES.put("g", new String[]{"ገ", "ጉ", "ጊ", "ጋ", "ጌ", "ግ", "ጎ", "ጓ"});
         FAMILIES.put("T", new String[]{"ጠ", "ጡ", "ጢ", "ጣ", "ጤ", "ጥ", "ጦ", "ጧ"});
         FAMILIES.put("C", new String[]{"ጨ", "ጩ", "ጪ", "ጫ", "ጬ", "ጭ", "ጮ", "ጯ"});
-        FAMILIES.put("P", new String[]{"ጰ", "ጱ", "ጲ", "ጳ", "ጴ", "ጵ", "ጶ", "ጷ"});
+        FAMILIES.put("P", new String[]{"ጰ", "ጱ", "ጲ", "ጳ", "ጴ", "ጵ", "ጶ", "<ctrl42>"});
         FAMILIES.put("ts", new String[]{"ጸ", "ጹ", "ጺ", "ጻ", "ጼ", "ጽ", "ጾ", "ጿ"});
         FAMILIES.put("f", new String[]{"ፈ", "ፉ", "ፊ", "ፋ", "ፌ", "ፍ", "ፎ", "ፏ"});
         FAMILIES.put("p", new String[]{"ፐ", "ፑ", "ፒ", "ፓ", "ፔ", "ፕ", "ፖ", "ፗ"});
@@ -216,17 +410,14 @@ public class PhoneticEngine {
     public static Result processKey(String key, String currentBuffer) {
         String combined = currentBuffer + key;
 
-        // Punctuation
         if (key.equals(":") && currentBuffer.equals(":")) return new Result("፡", 1, "");
         if (key.equals(":") && currentBuffer.equals("::")) return new Result("።", 1, "");
 
-        // Digraphs
         if (combined.equals("ch") || combined.equals("zh") || combined.equals("ny") || combined.equals("ts")) {
             String[] orders = FAMILIES.get(combined);
             return new Result(orders[0], currentBuffer.length(), combined);
         }
 
-        // Active consonant buffer conversion via vowel modifiers
         if (currentBuffer.length() > 0 && FAMILIES.containsKey(currentBuffer)) {
             String[] orders = FAMILIES.get(currentBuffer);
             if (key.equalsIgnoreCase("u")) return new Result(orders[1], 1, "");
@@ -238,13 +429,11 @@ public class PhoneticEngine {
             if (key.equalsIgnoreCase("w") && orders.length > 7 && !orders[7].isEmpty()) return new Result(orders[7], 1, "");
         }
 
-        // New consonant key
         if (FAMILIES.containsKey(key)) {
             String[] orders = FAMILIES.get(key);
             return new Result(orders[0], 0, key);
         }
 
-        // Default fallback
         return new Result(key, 0, "");
     }
 }
@@ -254,9 +443,8 @@ public class PhoneticEngine {
     filename: 'qwerty_layout.xml',
     path: 'app/src/main/res/xml/qwerty_layout.xml',
     language: 'xml',
-    description: 'Android Keyboard XML layout containing key codes and dedicated Language Lock key (-101).',
+    description: 'Android Soft Keyboard XML layout containing key codes and dedicated Language Lock key (-101).',
     content: `<?xml version="1.0" encoding="utf-8"?>
-<!-- Lightweight Keyboard Layout compatible with Android 2.4 (API 8) up to Android 15 -->
 <Keyboard xmlns:android="http://schemas.android.com/apk/res/android"
     android:keyWidth="10%p"
     android:keyHeight="50dp"
@@ -301,7 +489,6 @@ public class PhoneticEngine {
     </Row>
 
     <Row android:rowEdgeFlags="bottom">
-        <!-- Dedicated Language Locking Button (KeyCode -101) -->
         <Key android:codes="-101" android:keyLabel="🔒 LANG LOCK" android:keyWidth="25%p" android:keyEdgeFlags="left"/>
         <Key android:codes="32" android:keyLabel="SPACE (አማርኛ / EN)" android:keyWidth="50%p"/>
         <Key android:codes="-4" android:keyLabel="ENTER" android:keyWidth="25%p" android:keyEdgeFlags="right"/>
@@ -320,7 +507,6 @@ public class PhoneticEngine {
     android:versionCode="1"
     android:versionName="1.0.0">
 
-    <!-- Compatibility: Android 2.4 (Froyo/Gingerbread - API 8) to Android 15 (API 35) -->
     <uses-sdk 
         android:minSdkVersion="8" 
         android:targetSdkVersion="35" />
@@ -331,7 +517,6 @@ public class PhoneticEngine {
         android:label="Amharic Windows Phonetic Keyboard"
         android:theme="@android:style/Theme.InputMethod">
 
-        <!-- Input Method Service Registration -->
         <service
             android:name=".AmharicIME"
             android:label="Amharic Windows Phonetic IME"
@@ -350,41 +535,46 @@ public class PhoneticEngine {
 `,
   },
   {
-    filename: 'build.gradle',
-    path: 'build.gradle',
-    language: 'groovy',
-    description: 'Lightweight Gradle configuration ensuring instant builds and minimal APK memory footprint (< 1.2MB).',
+    filename: 'build.gradle.kts',
+    path: 'build.gradle.kts',
+    language: 'kotlin',
+    description: 'Kotlin Gradle build configuration for Native Android Studio build.',
     content: `plugins {
-    id 'com.android.application'
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
-    namespace 'com.amharic.keyboard'
-    compileSdk 35
+    namespace = "com.amharic.keyboard"
+    compileSdk = 35
 
     defaultConfig {
-        applicationId "com.amharic.keyboard"
-        minSdk 8   // Supports Android 2.4+ (API 8)
-        targetSdk 35
-        versionCode 1
-        versionName "1.0.0"
+        applicationId = "com.amharic.keyboard"
+        minSdk = 8   // Supports Android 2.4+ (API 8) up to Android 15
+        targetSdk = 35
+        versionCode = 1
+        versionName = "1.0.0"
     }
 
     buildTypes {
-        release {
-            minifyEnabled true // Strip unused code for maximum lightweight performance
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        getByName("release") {
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }
 
 dependencies {
-    // ZERO external heavy dependencies to preserve ultra-lightweight footprint (<1.2MB APK)
+    // Ultra-lightweight: zero unnecessary dependencies
 }
 `,
   },

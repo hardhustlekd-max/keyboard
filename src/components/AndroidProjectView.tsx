@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Smartphone, Copy, Check, Download, ShieldCheck, Zap, Code, PackageCheck, FileArchive } from 'lucide-react';
+import { Smartphone, Copy, Check, Download, Code, PackageCheck, FileArchive } from 'lucide-react';
 import JSZip from 'jszip';
 import { ANDROID_FILES } from '../data/androidSourceCode';
 
@@ -40,11 +40,13 @@ export const AndroidProjectView: React.FC = () => {
       zip.file('settings.gradle', 'rootProject.name = "AmharicKeyboard"');
 
       // Add README.md
-      const readmeContent = `# Amharic Windows Phonetic Android Keyboard (Native IME)
+      const readmeContent = `# Amharic Windows Phonetic Android Keyboard (Native Kotlin & Java IME)
 
-This is a complete Native Android Soft Keyboard (InputMethodService) project compatible with Android 2.4+ (API 8) through Android 15+ (API 35).
+This is a complete Native Android Soft Keyboard (InputMethodService) project written in Kotlin and Java, compatible with Android 2.4+ (API 8) through Android 15+ (API 35).
 
-## Features
+## Included Source Files
+- Native Kotlin \`InputMethodService\` (\`AmharicIME.kt\`)
+- Pure Kotlin Windows 10 Amharic Phonetic Composition Engine (\`PhoneticEngineKt.kt\`)
 - Native Java \`InputMethodService\` (\`AmharicIME.java\`)
 - Pure Java Windows 10 Amharic Phonetic Composition Engine (\`PhoneticEngine.java\`)
 - Dedicated Language Locking Button (Key Code -101)
@@ -83,11 +85,11 @@ This is a complete Native Android Soft Keyboard (InputMethodService) project com
           <div className="flex items-center space-x-2">
             <Smartphone className="w-5 h-5 text-blue-500" />
             <h2 className="text-base sm:text-lg font-bold text-slate-100">
-              Native Android Keyboard Source Code (Android Studio Project)
+              Native Android Keyboard Source Code (Kotlin & Java)
             </h2>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Complete Native Java & XML <code className="text-blue-400">InputMethodService</code> for building real Android <code className="text-blue-400">.apk</code> installables in Android Studio.
+            Complete Native Kotlin, Java & XML <code className="text-blue-400">InputMethodService</code> for building real Android <code className="text-blue-400">.apk</code> installables in Android Studio.
           </p>
         </div>
 
@@ -111,7 +113,7 @@ This is a complete Native Android Soft Keyboard (InputMethodService) project com
           <span>How to build your real Native Android Keyboard APK:</span>
         </div>
         <ol className="list-decimal list-inside space-y-1 text-slate-300 leading-relaxed pl-1">
-          <li>Click <strong className="text-white">"Download Android Studio Project (.zip)"</strong> above to download the full Java + XML source repository.</li>
+          <li>Click <strong className="text-white">"Download Android Studio Project (.zip)"</strong> above to download the full Kotlin/Java + XML source repository.</li>
           <li>Unzip the archive on your computer and open it in <strong className="text-white">Android Studio</strong> (or VS Code with Gradle plugin).</li>
           <li>In Android Studio, click <strong className="text-white">Build &gt; Build Bundle(s) / APK(s) &gt; Build APK(s)</strong>.</li>
           <li>Transfer the output <code className="text-blue-300">app-debug.apk</code> file to your Android phone to install the real system keyboard!</li>
@@ -176,4 +178,3 @@ This is a complete Native Android Soft Keyboard (InputMethodService) project com
     </div>
   );
 };
-
