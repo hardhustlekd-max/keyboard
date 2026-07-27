@@ -39,7 +39,7 @@ export type ThemeMode = 'light' | 'dark' | 'retro-gingerbread' | 'material-blue'
 export interface AndroidCodeFile {
   filename: string;
   path: string;
-  language: 'java' | 'xml' | 'groovy' | 'json';
+  language: 'java' | 'kotlin' | 'xml' | 'groovy' | 'json';
   description: string;
   content: string;
 }
